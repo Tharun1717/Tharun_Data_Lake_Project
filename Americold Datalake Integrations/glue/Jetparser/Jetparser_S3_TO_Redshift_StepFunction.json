@@ -1,0 +1,494 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "RunParallelJobs",
+  "States": {
+    "RunParallelJobs": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "PopulateAdjustmentTable",
+          "States": {
+            "PopulateAdjustmentTable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_adjustment_table"
+              },
+              "End": true,
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Adjustment Job Error Handler"
+                }
+              ]
+            },
+            "Adjustment Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "Adjustment Error Notification"
+            },
+            "Adjustment Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PopulateDocTable",
+          "States": {
+            "PopulateDocTable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_document_table"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Document Job Error Handler"
+                }
+              ],
+              "End": true
+            },
+            "Document Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "Document Error Notification"
+            },
+            "Document Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PopulateSnapshotTable",
+          "States": {
+            "PopulateSnapshotTable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_snapshot_table"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Snapshot Job Error Handler"
+                }
+              ],
+              "End": true
+            },
+            "Snapshot Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "Snapshot Error Notification"
+            },
+            "Snapshot Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PopulateAppointmentTable",
+          "States": {
+            "PopulateAppointmentTable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_appointment_table"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Appointment Job Error Handler"
+                }
+              ],
+              "End": true
+            },
+            "Appointment Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "Appointment Error Notification"
+            },
+            "Appointment Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PopulateItemInfoTable",
+          "States": {
+            "PopulateItemInfoTable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_iteminfo_table"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "Iteminfo Job Error Handler"
+                }
+              ],
+              "End": true
+            },
+            "Iteminfo Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "Iteminfo Error Notification"
+            },
+            "Iteminfo Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PopulateManualKPITable",
+          "States": {
+            "PopulateManualKPITable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_manualkpi_table"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "ManualKPI Job Error Handler"
+                }
+              ],
+              "End": true
+            },
+            "ManualKPI Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "ManualKPI Error Notification"
+            },
+            "ManualKPI Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PopulateLocMasterTable",
+          "States": {
+            "PopulateLocMasterTable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_location_master_table"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "LocationMaster Job Error Handler"
+                }
+              ],
+              "End": true
+            },
+            "LocationMaster Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "LocationMaster Error Notification"
+            },
+            "LocationMaster Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PopulateTPTable",
+          "States": {
+            "PopulateTPTable": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "jetparser_populate_trading_partners_table"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "TradingPartners Job Error Handler"
+                }
+              ],
+              "End": true
+            },
+            "TradingPartners Job Error Handler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "TradingPartners Error Notification"
+            },
+            "TradingPartners Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+                "Subject": "JetParser Status Glue Job Failure",
+                "Message.$": "$"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Glue StartJobRun"
+    },
+    "Glue StartJobRun": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "jet_parser_notification"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Comment": "Catch",
+          "Next": "JetParser Status Error Handler"
+        }
+      ],
+      "End": true
+    },
+    "JetParser Status Error Handler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Glue job notif error"
+    },
+    "Glue job notif error": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:us-west-2:598936376082:JetParserNotifications",
+        "Subject": "JetParser Status Glue Job Failure",
+        "Message.$": "$"
+      },
+      "End": true
+    }
+  }
+}

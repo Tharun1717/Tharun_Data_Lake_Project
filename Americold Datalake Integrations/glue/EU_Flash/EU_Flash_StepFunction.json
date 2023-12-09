@@ -1,0 +1,183 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Lambda Invoke",
+  "States": {
+    "Lambda Invoke": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-west-2:646632670602:function:eu_flash_folder_hierarchy:$LATEST",
+        "Payload.$": "$"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Lambda Flash EU Folder hierarchy"
+        }
+      ],
+      "Next": "Lambda Success"
+    },
+    "Lambda Success": {
+      "Type": "Pass",
+      "Next": "Process Flash EU data"
+    },
+    "Process Flash EU data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "eu_flash_detail_process"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Comment": "Catch",
+          "Next": "Process Flash EU Error handler"
+        }
+      ],
+      "Next": "Populate Redshift table"
+    },
+    "Populate Redshift table": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "eu_flash_detail_populate_redshift_table"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Populate Redshift Error handler"
+        }
+      ],
+      "Next": "Flash EU Sucess Notif"
+    },
+    "Flash EU Sucess Notif": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:us-west-2:646632670602:Flash_EU_topic",
+        "Subject": "Flash EU Pipeline - SUCCESS",
+        "Message": "The Flash EU Pipeline has finished succesfully and the Redshift table has been updated."
+      },
+      "End": true
+    },
+    "Populate Redshift Error handler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-west-2:646632670602:function:orion_glue_job_catch_error:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Notif error for Populate Redshift"
+    },
+    "Notif error for Populate Redshift": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:us-west-2:646632670602:Flash_EU_topic",
+        "Subject": "JetParser Status Glue Job Failure",
+        "Message.$": "$"
+      },
+      "End": true
+    },
+    "Process Flash EU Error handler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-west-2:646632670602:function:orion_glue_job_catch_error:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Notif error for Flash EU process"
+    },
+    "Lambda Flash EU Folder hierarchy": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-west-2:646632670602:function:orion_glue_job_catch_error:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Notif error for Lambda Folder hierarchy"
+    },
+    "Notif error for Flash EU process": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:us-west-2:646632670602:Flash_EU_topic",
+        "Subject": "Flash EU Status Glue Job Failure",
+        "Message.$": "$"
+      },
+      "End": true
+    },
+    "Notif error for Lambda Folder hierarchy": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:us-west-2:646632670602:Flash_EU_topic",
+        "Subject": "Flash EU Status Glue Job Failure",
+        "Message.$": "$"
+      },
+      "End": true
+    }
+  }
+}
