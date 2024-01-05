@@ -1,0 +1,136 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Lambda Invoke",
+    "States": {
+      "Lambda Invoke": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:fixed_commitments_lambda",
+          "Payload.$": "$"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Lambda fixed_commitments_function"
+          }
+        ],
+        "Next": "Lambda Success"
+      },
+      "Lambda Success": {
+        "Type": "Pass",
+        "Result": "Lambda invocation succeeded",
+        "Next": "Process fixed commitments data"
+      },
+      "Process fixed commitments data": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "orion_edw_fixed_commitments"
+        },
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Process fixed_commitments Error handler"
+          }
+        ],
+        "Next": "Notif error for fixed_commitments process"
+      },
+      "Process fixed_commitments Error handler": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Notif error for fixed_commitments process"
+      },
+      "Lambda fixed_commitments_function": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:598936376082:function:orion_glue_job_catch_error"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Notif error for Lambda Folder hierarchy"
+      },
+      "Notif error for fixed_commitments process": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::sns:publish",
+        "Parameters": {
+          "TopicArn": "arn:aws:sns:us-west-2:598936376082:fixed_commitments",
+          "Subject": "Fixed Commitments Status Glue Job ",
+          "Message.$": "$.JobRunState",
+          "MessageAttributes": {
+            "status": {
+              "DataType": "String",
+              "StringValue": "failed"
+            }
+          }
+        },
+        "End": true
+      },
+      "Notif error for Lambda Folder hierarchy": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::sns:publish",
+        "Parameters": {
+          "TopicArn": "arn:aws:sns:us-west-2:598936376082:fixed_commitments",
+          "Subject": "Lambda Folder Hierarchy Failure",
+          "Message.$": "$.JobRunState",
+          "MessageAttributes": {
+            "status": {
+              "DataType": "String",
+              "StringValue": "failed"
+            }
+          }
+        },
+        "End": true
+      }
+    }
+  }
