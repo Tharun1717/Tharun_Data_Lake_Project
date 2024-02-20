@@ -1,0 +1,38 @@
+{
+    "jsonpaths": [
+      "$.Layer_Pick__c",
+      "$.Temperature_Type__c",
+      "$.CurrencyIsoCode__c",
+      "$.Annual_Committed_Revenue__c",
+      "$.Initial_WRA_ID__c",
+      "$.SFDC_Customer_Number__c",
+      "$.Committed_Unit_of_Measure__c",
+      "$.Commitment_Type__c",
+      "$.Site_Center__c",
+      "$.CreatedById",
+      "$.Program_Status__c",
+      "$.Customer_Blanket_PO__c",
+      "$.Inbound_Time_Based_Charge__c",
+      "$.Partial_Billing_Integration__c",
+      "$.Commitment__c",
+      "$.WMS_Number__c",
+      "$.Distribution_Channel__c",
+      "$.Retail_Billing__c",
+      "$.Oracle_Business_Unit__c",
+      "$.Payment_Terms__c",
+      "$.Agreement_Program_ID__c",
+      "$.Annual_Committed_Amount__c",
+      "$.Weight_Billing_Type__c",
+      "$.Item_Family_Payload__c",
+      "$.Shared_Commitment_ID__c",
+      "$.Supplier_Billing__c",
+      "$.CreatedDate",
+      "$.Rates_Payload__c",
+      "$.Commitment_Calendar_Type__c",
+      "$.SFDC_Billing_Site_ID__c",
+      "$.Facility_ID__c",
+      "$.au_created_date",
+      "$.au_updated_date"
+    ]
+  }
+  
