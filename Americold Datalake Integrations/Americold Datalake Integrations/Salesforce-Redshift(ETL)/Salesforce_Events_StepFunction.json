@@ -1,0 +1,55 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "RunSalesforceGlueJob",
+    "States": {
+      "RunSalesforceGlueJob": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "Salesforce_Events_Program_Id_Data"
+        },
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "GlueJobErrorHandler"
+          }
+        ],
+        "End": true
+      },
+      "GlueJobErrorHandler": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:us-west-2:646632670602:function:orion_glue_job_catch_error:$LATEST"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "GlueJobErrorNotification"
+      },
+      "GlueJobErrorNotification": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::sns:publish",
+        "Parameters": {
+          "TopicArn": "arn:aws:sns:us-west-2:646632670602:salesforce_events",
+          "Subject": "Salesforce_Events_Program_Id_Data Status Glue Job Failure",
+          "Message.$": "$"
+        },
+        "End": true
+      }
+    }
+  }
