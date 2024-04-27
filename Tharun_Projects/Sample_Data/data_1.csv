@@ -1,0 +1,11 @@
+CustomerID,FirstName,LastName,Email,PhoneNumber,Address,City,State,PostalCode,Country,DateOfBirth
+1,John,Doe,john.doe@example.com,555-1234,123 Elm St,Springfield,IL,62704,USA,1985-03-15
+2,Jane,Smith,jane.smith@example.com,555-5678,456 Oak St,Columbus,OH,43215,USA,1990-06-20
+3,Bob,Johnson,bob.johnson@example.com,555-9876,789 Pine St,Dallas,TX,75201,USA,1982-11-05
+4,Alice,Williams,alice.williams@example.com,555-2468,321 Maple St,Seattle,WA,98101,USA,1988-09-10
+5,Michael,Brown,michael.brown@example.com,555-1357,654 Cedar St,San Francisco,CA,94102,USA,1975-12-25
+6,Emily,Garcia,emily.garcia@example.com,555-3698,987 Birch St,Miami,FL,33101,USA,1995-04-10
+7,David,Martinez,david.martinez@example.com,555-7412,258 Ash St,Denver,CO,80201,USA,1987-07-23
+8,Olivia,Thompson,olivia.thompson@example.com,555-8529,753 Palm St,Phoenix,AZ,85001,USA,1993-02-14
+9,Daniel,Anderson,daniel.anderson@example.com,555-3692,125 Willow St,New York,NY,10001,USA,1980-08-30
+10,Sophia,Lopez,sophia.lopez@example.com,555-9638,789 Elm St,Los Angeles,CA,90001,USA,1992-05-05

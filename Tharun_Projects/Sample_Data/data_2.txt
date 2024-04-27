@@ -1,0 +1,1 @@
+A CSV (Comma Separated Values) file is a common format for storing tabular data, often used for importing and exporting data from databases and other software applications. A sample CSV file containing customer data might include columns such as customer ID, first name, last name, email, phone number, address, city, state, postal code, country, and date of birth
