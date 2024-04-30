@@ -1,0 +1,1 @@
+In this text file we have write the information about how to get the word count using rdd in pysprk in some less lines this is a process of learning pyspark.
